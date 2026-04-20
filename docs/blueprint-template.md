@@ -81,7 +81,7 @@
   - Expanded `docs/alerts.md` runbook: enriched all 3 existing runbooks with severity, first-check steps, mitigation actions, and escalation path; added runbook section 4 for `low_quality_score` including RAG doc_count check and over-redaction diagnosis.
   - Built `scripts/check_slo.py`: standalone Python script that fetches live `/metrics` from the running FastAPI app, loads `config/slo.yaml`, evaluates each SLI against its objective, and prints a compliance table (exit code 0 = all pass, 1 = breach). Supports `--url` flag and `--json` output mode.
   - Verified compliance: ran `python scripts/check_slo.py` after 30 live requests — all 4 SLOs passed (P95=165 ms, error_rate=0%, cost=$0.063, quality=0.88). `validate_logs.py` score = 100/100, 0 PII leaks, 30 unique correlation IDs.
-- [EVIDENCE_LINK]: [Your commit link]
+- [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/5315476
 
 ### [MEMBER_D_NAME]
 - [TASKS_COMPLETED]: 
