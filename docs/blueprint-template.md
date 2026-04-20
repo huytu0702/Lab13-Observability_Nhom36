@@ -4,14 +4,14 @@
 > **Instruction**: Fill in all sections below. This report is designed to be parsed by an automated grading assistant. Ensure all tags (e.g., `[GROUP_NAME]`) are preserved.
 
 ## 1. Team Metadata
-- [GROUP_NAME]: 
-- [REPO_URL]: 
+- [GROUP_NAME]: [Nhom 36]
+- [REPO_URL]: https://github.com/huytu0702/Lab13-Observability_Nhom36.git
 - [MEMBERS]:
-  - Member A: Nguyễn Huy Tú (2A202600170) | Role: Logging & PII
-  - Member B: Phạm Quốc Vương (2A202600419) | Role: Tracing & Enrichment
-  - Member C: Trương Minh Phước (2A202600330) | Role: SLO & Alerts
-  - Member D: Nguyễn Thành Trung (2A202600451) | Role: Load Test & Dashboard
-  - Member E: [Name] | Role: Demo & Report
+  - Member A: [Nguyễn Huy Tú] | Role: Logging & PII
+  - Member B: [Phạm Quốc Vương] | Role: Tracing & Enrichment
+  - Member C: [Trương Minh Phước] | Role: SLO & Alerts
+  - Member D: [Nguyễn Thành Trung] | Role: Load Test & Dashboard
+  - Member E: [Lương Hoàng Anh] | Role: Demo & Report
 
 ---
 
