@@ -3,14 +3,14 @@
 > **Instruction**: Fill in all sections below. This report is designed to be parsed by an automated grading assistant. Ensure all tags (e.g., `[GROUP_NAME]`) are preserved.
 
 ## 1. Team Metadata
-- [GROUP_NAME]: 
-- [REPO_URL]: 
+- [GROUP_NAME]: [Nhom 36]
+- [REPO_URL]: https://github.com/huytu0702/Lab13-Observability_Nhom36.git
 - [MEMBERS]:
-  - Member A: [Name] | Role: Logging & PII
-  - Member B: [Name] | Role: Tracing & Enrichment
-  - Member C: [Name] | Role: SLO & Alerts
-  - Member D: [Name] | Role: Load Test & Dashboard
-  - Member E: [Name] | Role: Demo & Report
+  - Member A: [Nguyễn Huy Tú] | Role: Logging & PII
+  - Member B: [Phạm Quốc Vương] | Role: Tracing & Enrichment
+  - Member C: [Trương Minh Phước] | Role: SLO & Alerts
+  - Member D: [Nguyễn Thành Trung] | Role: Load Test & Dashboard
+  - Member E: [Lương Hoàng Anh] | Role: Demo & Report
 
 ---
 
@@ -32,11 +32,11 @@
 ### 3.2 Dashboard & SLOs
 - [DASHBOARD_6_PANELS_SCREENSHOT]: [Path to image]
 - [SLO_TABLE]:
-| SLI | Target | Window | Current Value |
-|---|---:|---|---:|
-| Latency P95 | < 3000ms | 28d | |
-| Error Rate | < 2% | 28d | |
-| Cost Budget | < $2.5/day | 1d | |
+| SLI         |     Target | Window | Current Value |
+| ----------- | ---------: | ------ | ------------: |
+| Latency P95 |   < 3000ms | 28d    |               |
+| Error Rate  |       < 2% | 28d    |               |
+| Cost Budget | < $2.5/day | 1d     |               |
 
 ### 3.3 Alerts & Runbook
 - [ALERT_RULES_SCREENSHOT]: [Path to image]
