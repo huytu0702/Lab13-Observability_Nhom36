@@ -1,19 +1,49 @@
 alerts:
   - name: high_latency_p95
     severity: P2
-    condition: latency_p95_ms > 5000 for 30m
+    condition: latency_p95_ms > 3000 for 30m
     type: symptom-based
     owner: team-oncall
     runbook: docs/alerts.md#1-high-latency-p95
+    annotations:
+      summary: "P95 latency breached SLO threshold (3000 ms)"
+      description: >
+        The 95th-percentile request latency has exceeded 3000 ms for 30 minutes.
+        This indicates tail-latency degradation affecting up to 5% of users.
+
   - name: high_error_rate
     severity: P1
-    condition: error_rate_pct > 5 for 5m
+    condition: error_rate_pct > 2 for 5m
     type: symptom-based
     owner: team-oncall
     runbook: docs/alerts.md#2-high-error-rate
+    annotations:
+      summary: "Error rate breached SLO threshold (2%)"
+      description: >
+        The fraction of failed /chat requests has exceeded 2% for 5 minutes.
+        Users are receiving HTTP 500 responses. Immediate investigation required.
+
   - name: cost_budget_spike
     severity: P2
     condition: hourly_cost_usd > 2x_baseline for 15m
     type: symptom-based
     owner: finops-owner
     runbook: docs/alerts.md#3-cost-budget-spike
+    annotations:
+      summary: "Hourly cost is 2× above baseline"
+      description: >
+        Token spend has doubled compared to the rolling hourly baseline.
+        If sustained, daily budget of $2.50 will be breached by end of day.
+
+  - name: low_quality_score
+    severity: P3
+    condition: quality_score_avg < 0.75 for 60m
+    type: symptom-based
+    owner: ml-owner
+    runbook: docs/alerts.md#4-low-quality-score
+    annotations:
+      summary: "Average quality score dropped below SLO target (0.75)"
+      description: >
+        The heuristic quality score averaged over the last 60 minutes fell below 0.75.
+        This may indicate retrieval failures, prompt degradation, or PII redaction
+        removing content that is needed for correct answers.

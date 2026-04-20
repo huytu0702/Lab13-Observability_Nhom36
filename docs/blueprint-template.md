@@ -1,3 +1,4 @@
+
 # Day 13 Observability Lab Report
 
 > **Instruction**: Fill in all sections below. This report is designed to be parsed by an automated grading assistant. Ensure all tags (e.g., `[GROUP_NAME]`) are preserved.
@@ -8,16 +9,16 @@
 - [MEMBERS]:
   - Member A: Nguyễn Huy Tú (2A202600170) | Role: Logging & PII
   - Member B: Phạm Quốc Vương (2A202600419) | Role: Tracing & Enrichment
-  - Member C: [Name] | Role: SLO & Alerts
+  - Member C: Trương Minh Phước (2A202600330) | Role: SLO & Alerts
   - Member D: [Name] | Role: Load Test & Dashboard
   - Member E: [Name] | Role: Demo & Report
 
 ---
 
 ## 2. Group Performance (Auto-Verified)
-- [VALIDATE_LOGS_FINAL_SCORE]: /100
-- [TOTAL_TRACES_COUNT]: 
-- [PII_LEAKS_FOUND]: 
+- [VALIDATE_LOGS_FINAL_SCORE]: 100/100
+- [TOTAL_TRACES_COUNT]: 30
+- [PII_LEAKS_FOUND]: 0
 
 ---
 
@@ -34,13 +35,14 @@
 - [SLO_TABLE]:
 | SLI | Target | Window | Current Value |
 |---|---:|---|---:|
-| Latency P95 | < 3000ms | 28d | |
-| Error Rate | < 2% | 28d | |
-| Cost Budget | < $2.5/day | 1d | |
+| Latency P95 | < 3000ms | 28d | 165 ms |
+| Error Rate | < 2% | 28d | 0.0% |
+| Cost Budget | < $2.5/day | 1d | $0.0631 (30 req) |
+| Quality Score Avg | >= 0.75 | 28d | 0.88 |
 
 ### 3.3 Alerts & Runbook
 - [ALERT_RULES_SCREENSHOT]: [Path to image]
-- [SAMPLE_RUNBOOK_LINK]: [docs/alerts.md#L...]
+- [SAMPLE_RUNBOOK_LINK]: docs/alerts.md#1-high-latency-p95
 
 ---
 
@@ -72,9 +74,14 @@
   
 - [EVIDENCE_LINK]: [Your commit link - e.g., https://github.com/username/repo/commit/abc123] 
 
-### [MEMBER_C_NAME]
-- [TASKS_COMPLETED]: 
-- [EVIDENCE_LINK]: 
+### Trương Minh Phước (2A202600330)
+- [TASKS_COMPLETED]:
+  - Refined `config/slo.yaml`: added `group`, `description` fields for each SLI and linked each SLI to its alert rule; targets are `latency_p95_ms < 3000 ms`, `error_rate_pct < 2%`, `daily_cost_usd < $2.50`, `quality_score_avg >= 0.75`.
+  - Extended `config/alert_rules.yaml`: tightened latency threshold from 5000 ms to 3000 ms (aligned with SLO); tightened error-rate threshold from 5% to 2% (aligned with SLO); added full `annotations` (summary + description) to all 3 existing rules; added 4th alert rule `low_quality_score` (severity P3, trigger `quality_score_avg < 0.75 for 60m`).
+  - Expanded `docs/alerts.md` runbook: enriched all 3 existing runbooks with severity, first-check steps, mitigation actions, and escalation path; added runbook section 4 for `low_quality_score` including RAG doc_count check and over-redaction diagnosis.
+  - Built `scripts/check_slo.py`: standalone Python script that fetches live `/metrics` from the running FastAPI app, loads `config/slo.yaml`, evaluates each SLI against its objective, and prints a compliance table (exit code 0 = all pass, 1 = breach). Supports `--url` flag and `--json` output mode.
+  - Verified compliance: ran `python scripts/check_slo.py` after 30 live requests — all 4 SLOs passed (P95=165 ms, error_rate=0%, cost=$0.063, quality=0.88). `validate_logs.py` score = 100/100, 0 PII leaks, 30 unique correlation IDs.
+- [EVIDENCE_LINK]: [Your commit link]
 
 ### [MEMBER_D_NAME]
 - [TASKS_COMPLETED]: 
