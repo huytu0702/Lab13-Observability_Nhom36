@@ -1,0 +1,5 @@
+{
+  "rag_slow": "Retrieval latency spike. Students should find slow RAG span in trace.",
+  "tool_fail": "Vector store or tool error. Students should identify error_type from logs.",
+  "cost_spike": "Token usage spike. Students should explain higher output token cost."
+}
