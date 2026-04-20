@@ -4,6 +4,7 @@ import os
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
 from structlog.contextvars import bind_contextvars
 
 from .agent import LabAgent
@@ -15,6 +16,7 @@ from .pii import hash_user_id, summarize_text
 from .schemas import ChatRequest, ChatResponse
 from .tracing import tracing_enabled
 
+load_dotenv()
 configure_logging()
 log = get_logger()
 app = FastAPI(title="Day 13 Observability Lab")
