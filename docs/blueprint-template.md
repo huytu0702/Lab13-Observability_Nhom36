@@ -39,12 +39,13 @@
 [dashboard_2.png](evidences/dashboard_2.png)
 
 - `[SLO_TABLE]`:
-| SLI | Target | Window | Current Value |
-|---|---:|---|---:|
-| Latency P95 | < 3000ms | 28d | 152 ms |
-| Error Rate | < 2% | 28d | 0.00% |
-| Cost Budget | < $2.5/day | 1d | $0.0608 (latest 30-request batch) |
-| Quality Score Avg | >= 0.75 | 28d | 0.88 |
+
+  | SLI | Target | Window | Current Value |
+  |---|---:|---|---:|
+  | Latency P95 | < 3000ms | 28d | 152 ms |
+  | Error Rate | < 2% | 28d | 0.00% |
+  | Cost Budget | < $2.5/day | 1d | $0.0608 (latest 30-request batch) |
+  | Quality Score Avg | >= 0.75 | 28d | 0.88 |
 
 ### 3.3 Alerts & Runbook
 - `[ALERT_RULES_SCREENSHOT]`: Alert rules are defined in `config/alert_rules.yaml` and each rule points to a concrete remediation guide in `docs/alerts.md`.
