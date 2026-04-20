@@ -10,7 +10,7 @@
   - Member A: Nguyễn Huy Tú (2A202600170) | Role: Logging & PII
   - Member B: Phạm Quốc Vương (2A202600419) | Role: Tracing & Enrichment
   - Member C: Trương Minh Phước (2A202600330) | Role: SLO & Alerts
-  - Member D: [Name] | Role: Load Test & Dashboard
+  - Member D: Nguyễn Thành Trung (2A202600451) | Role: Load Test & Dashboard
   - Member E: [Name] | Role: Demo & Report
 
 ---
@@ -31,7 +31,7 @@
 - [TRACE_WATERFALL_EXPLANATION]: (Briefly explain one interesting span in your trace)
 
 ### 3.2 Dashboard & SLOs
-- [DASHBOARD_6_PANELS_SCREENSHOT]: [Path to image]
+- [DASHBOARD_6_PANELS_SCREENSHOT]: docs/evidence/dashboard-panels-1.png, docs/evidence/dashboard-panels-2.png
 - [SLO_TABLE]:
 | SLI | Target | Window | Current Value |
 |---|---:|---|---:|
@@ -83,9 +83,20 @@
   - Verified compliance: ran `python scripts/check_slo.py` after 30 live requests — all 4 SLOs passed (P95=165 ms, error_rate=0%, cost=$0.063, quality=0.88). `validate_logs.py` score = 100/100, 0 PII leaks, 30 unique correlation IDs.
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/5315476
 
-### [MEMBER_D_NAME]
-- [TASKS_COMPLETED]: 
-- [EVIDENCE_LINK]: 
+### Nguyễn Thành Trung (2A202600451)
+- [TASKS_COMPLETED]:
+  - Rewrote `scripts/load_test.py` into a full load generator: added `--concurrency`, `--repeat`, `--duration`, `--rps`, `--report`, `--no-report` flags; per-request capture of latency, cost, tokens, quality, and correlation_id; aggregate summary printed and persisted to `data/load_report.json` (totals, success/failed, error_rate_pct, latency p50/p95/p99/avg/max, cost total/avg, tokens in/out, quality average, error breakdown).
+  - Added `scripts/render_dashboard.py`: fetches live `/metrics`, joins it with `data/load_report.json`, loads `config/slo.yaml` (PyYAML optional, hand-rolled fallback), and renders the 6 required panels into `docs/dashboard.md` with explicit SLO/threshold lines (Latency P50/P95/P99 vs 3000 ms, Traffic, Error Rate vs 2%, Cost vs $2.50/day, Tokens in/out, Quality vs 0.75). Also writes `data/dashboard_snapshot.json` for parser-friendly grading and prints any breaching panels.
+  - Expanded `docs/dashboard-spec.md`: documented the 6 panels with their `/metrics` source field, unit, SLO line, and matching alert (cross-linked to Member C's `config/alert_rules.yaml`); added the load-test → dashboard workflow and an evidence checklist.
+  - Verified end-to-end on a live `uvicorn app.main:app --reload`: ran `python scripts/load_test.py --concurrency 5 --repeat 3` (30 requests, all succeeded) followed by `python scripts/render_dashboard.py`. Output saved to `docs/dashboard.md` and `data/dashboard_snapshot.json`. All 6 panels report **OK** against the SLOs from `config/slo.yaml`:
+    - Latency server-side P50/P95/P99 = 152 / 165 / 166 ms (SLO P95 < 3000 ms).
+    - Wall-clock latency from the load tester P50/P95/P99 = 789 / 806 / 807 ms — the gap vs server-side is HTTP/network overhead, a useful demo of why client-side measurement matters.
+    - Error rate = 0.00% (SLO < 2%).
+    - Cost = $0.0584 total / $0.001900 avg per request (SLO < $2.50/day).
+    - Tokens in/out = 1020 / 3692.
+    - Quality avg = 0.88 (SLO >= 0.75).
+  - Evidence screenshots committed under `docs/evidence/dashboard-panels-1.png` (panels 1-4) and `docs/evidence/dashboard-panels-2.png` (panels 5-6 + load-test appendix).
+- [EVIDENCE_LINK]: [Your commit link - e.g., https://github.com/username/repo/commit/abc123]
 
 ### [MEMBER_E_NAME]
 - [TASKS_COMPLETED]: 

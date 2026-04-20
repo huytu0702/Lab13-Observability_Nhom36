@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-04-20T09:39:42.073871+00:00",
+  "service": "day13-observability-lab",
+  "group": "Nhom36",
+  "slo_window": "28d",
+  "thresholds": {
+    "latency_p95_ms": 3000.0,
+    "error_rate_pct": 2.0,
+    "daily_cost_usd": 2.5,
+    "quality_score_avg": 0.75
+  },
+  "panels": {
+    "latency": {
+      "p50": 155.0,
+      "p95": 166.0,
+      "p99": 166.0,
+      "threshold_p95_ms": 3000.0,
+      "status": "OK"
+    },
+    "traffic": {
+      "requests": 30,
+      "load_test_total": 30
+    },
+    "error_rate": {
+      "rate_pct": 0.0,
+      "threshold_pct": 2.0,
+      "breakdown": {},
+      "status": "OK"
+    },
+    "cost": {
+      "total_usd": 0.0646,
+      "avg_usd": 0.0022,
+      "threshold_daily_usd": 2.5,
+      "status": "OK"
+    },
+    "tokens": {
+      "in_total": 1020,
+      "out_total": 4102
+    },
+    "quality": {
+      "avg": 0.88,
+      "threshold": 0.75,
+      "status": "OK"
+    }
+  },
+  "load_report": {
+    "started_at": "2026-04-20T09:39:22.274510+00:00",
+    "finished_at": "2026-04-20T09:39:27.240891+00:00",
+    "total": 30,
+    "success": 30,
+    "failed": 0,
+    "error_rate_pct": 0.0,
+    "latency_ms": {
+      "p50": 800.64,
+      "p95": 850.85,
+      "p99": 851.72,
+      "avg": 771.77,
+      "max": 851.72
+    },
+    "cost_usd": {
+      "total": 0.06459,
+      "avg": 0.002153
+    },
+    "tokens": {
+      "in_total": 1020,
+      "out_total": 4102
+    },
+    "quality_score_avg": 0.88,
+    "errors": {}
+  }
+}

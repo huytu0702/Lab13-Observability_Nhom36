@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import os
 
+from dotenv import load_dotenv
+
+# Load env BEFORE importing Langfuse so the SDK picks up keys at first use.
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 from structlog.contextvars import bind_contextvars
 
 from .agent import LabAgent
@@ -14,9 +18,9 @@ from .metrics import record_error, snapshot
 from .middleware import CorrelationIdMiddleware
 from .pii import hash_user_id, summarize_text
 from .schemas import ChatRequest, ChatResponse
+from .tracing import flush as flush_tracing
 from .tracing import tracing_enabled
 
-load_dotenv()
 configure_logging()
 log = get_logger()
 app = FastAPI(title="Day 13 Observability Lab")
@@ -32,6 +36,12 @@ async def startup() -> None:
         env=os.getenv("APP_ENV", "dev"),
         payload={"tracing_enabled": tracing_enabled()},
     )
+
+
+@app.on_event("shutdown")
+async def shutdown() -> None:
+    flush_tracing()
+    log.info("app_stopping", service=os.getenv("APP_NAME", "day13-observability-lab"))
 
 
 @app.get("/health")
@@ -66,6 +76,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             feature=body.feature,
             session_id=body.session_id,
             message=body.message,
+            correlation_id=request.state.correlation_id,
         )
         log.info(
             "response_sent",

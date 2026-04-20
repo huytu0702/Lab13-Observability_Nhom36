@@ -7,7 +7,7 @@ from . import metrics
 from .mock_llm import FakeLLM
 from .mock_rag import retrieve
 from .pii import hash_user_id, summarize_text
-from .tracing import langfuse_context, observe
+from .tracing import langfuse_generation, langfuse_span, observe, update_current_trace
 
 
 @dataclass
@@ -25,24 +25,65 @@ class LabAgent:
         self.model = model
         self.llm = FakeLLM(model=model)
 
-    @observe()
-    def run(self, user_id: str, feature: str, session_id: str, message: str) -> AgentResult:
+    @observe(name="agent.run")
+    def run(
+        self,
+        user_id: str,
+        feature: str,
+        session_id: str,
+        message: str,
+        correlation_id: str | None = None,
+    ) -> AgentResult:
         started = time.perf_counter()
-        docs = retrieve(message)
-        prompt = f"Feature={feature}\nDocs={docs}\nQuestion={message}"
-        response = self.llm.generate(prompt)
-        quality_score = self._heuristic_quality(message, response.text, docs)
-        latency_ms = int((time.perf_counter() - started) * 1000)
-        cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
+        message_preview = summarize_text(message)
 
-        langfuse_context.update_current_trace(
+        trace_metadata: dict = {}
+        if correlation_id:
+            trace_metadata["correlation_id"] = correlation_id
+
+        update_current_trace(
+            name=f"chat.{feature}",
             user_id=hash_user_id(user_id),
             session_id=session_id,
             tags=["lab", feature, self.model],
+            input={"feature": feature, "query_preview": message_preview},
+            metadata=trace_metadata or None,
         )
-        langfuse_context.update_current_observation(
-            metadata={"doc_count": len(docs), "query_preview": summarize_text(message)},
-            usage_details={"input": response.usage.input_tokens, "output": response.usage.output_tokens},
+
+        with langfuse_span(name="rag.retrieve", input={"query_preview": message_preview}) as span:
+            docs = retrieve(message)
+            span.update(output={"doc_count": len(docs)}, metadata={"doc_count": len(docs)})
+
+        prompt = f"Feature={feature}\nDocs={docs}\nQuestion={message}"
+        with langfuse_generation(
+            name="llm.generate",
+            model=self.model,
+            input={"prompt_preview": summarize_text(prompt)},
+            metadata={"feature": feature, "doc_count": len(docs)},
+        ) as gen:
+            response = self.llm.generate(prompt)
+            cost_usd = self._estimate_cost(response.usage.input_tokens, response.usage.output_tokens)
+            gen.update(
+                output={"answer_preview": summarize_text(response.text)},
+                usage_details={
+                    "input": response.usage.input_tokens,
+                    "output": response.usage.output_tokens,
+                },
+                cost_details={"total": cost_usd},
+            )
+
+        quality_score = self._heuristic_quality(message, response.text, docs)
+        latency_ms = int((time.perf_counter() - started) * 1000)
+
+        update_current_trace(
+            output={"answer_preview": summarize_text(response.text), "quality_score": quality_score},
+            metadata={
+                "latency_ms": latency_ms,
+                "cost_usd": cost_usd,
+                "doc_count": len(docs),
+                "tokens_in": response.usage.input_tokens,
+                "tokens_out": response.usage.output_tokens,
+            },
         )
 
         metrics.record_request(
