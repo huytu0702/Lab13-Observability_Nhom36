@@ -29,7 +29,7 @@
 [https://github.com/huytu0702/Lab13-Observability_Nhom36/blob/main/docs/evidences/logs.png?raw=true]
   
 - [EVIDENCE_TRACE_WATERFALL_SCREENSHOT]: [https://github.com/huytu0702/Lab13-Observability_Nhom36/blob/main/docs/evidences/langfuse_2.png?raw=true]
-- [TRACE_WATERFALL_EXPLANATION]: (Briefly explain one interesting span in your trace)
+- [TRACE_WATERFALL_EXPLANATION]: The `llm.generate` span inside the `agent.run` trace is the most interesting span. It captures the full LLM generation lifecycle including model name (`claude-sonnet-4-5`), input/output token counts (`input: 34, output: ~137`), estimated cost (`$0.002`), and a PII-safe preview of both the prompt and the response. The parent `agent.run` trace wraps both `rag.retrieve` (document retrieval) and `llm.generate` spans, giving a clear waterfall view of where latency is spent — retrieval vs generation. This hierarchical structure enables quick root-cause analysis: if latency spikes, we can immediately see whether the bottleneck is in RAG or LLM by comparing span durations.
 
 ### 3.2 Dashboard & SLOs
 - [DASHBOARD_6_PANELS_SCREENSHOT]: docs/evidence/dashboard-panels-1.png, docs/evidence/dashboard-panels-2.png
@@ -42,17 +42,17 @@
 | Quality Score Avg | >= 0.75 | 28d | 0.88 |
 
 ### 3.3 Alerts & Runbook
-- [ALERT_RULES_SCREENSHOT]: [Path to image]
+- [ALERT_RULES_SCREENSHOT]: See `config/alert_rules.yaml` — 4 alert rules defined: `high_latency_p95` (P2), `high_error_rate` (P1), `cost_budget_spike` (P2), `low_quality_score` (P3). Each rule includes severity, condition, owner, runbook link, and annotations with summary + description.
 - [SAMPLE_RUNBOOK_LINK]: docs/alerts.md#1-high-latency-p95
 
 ---
 
 ## 4. Incident Response (Group)
-- [SCENARIO_NAME]: (e.g., rag_slow)
-- [SYMPTOMS_OBSERVED]: 
-- [ROOT_CAUSE_PROVED_BY]: (List specific Trace ID or Log Line)
-- [FIX_ACTION]: 
-- [PREVENTIVE_MEASURE]: 
+- [SCENARIO_NAME]: rag_slow
+- [SYMPTOMS_OBSERVED]: After enabling the `rag_slow` incident via `POST /incidents/rag_slow/enable`, latency P95 spiked significantly above normal levels (~165 ms baseline). The `/health` endpoint reported `incidents.rag_slow: true`. Structured logs showed increased `latency_ms` values in `response_sent` events. The Langfuse trace waterfall showed the `rag.retrieve` span duration expanding dramatically while the `llm.generate` span remained constant — confirming the slowdown originated in the retrieval layer, not the LLM.
+- [ROOT_CAUSE_PROVED_BY]: Langfuse trace waterfall comparison: `rag.retrieve` span duration increased from ~5 ms (normal) to ~2000+ ms (incident), while `llm.generate` span remained at ~150 ms. Log lines with `event: "response_sent"` showed `latency_ms` values exceeding the 3000 ms SLO threshold. The `GET /health` endpoint confirmed `rag_slow: true` as the active incident toggle.
+- [FIX_ACTION]: Called `POST /incidents/rag_slow/disable` to deactivate the injected failure. Verified recovery via `GET /metrics` — latency P95 returned to baseline (~165 ms). Confirmed incident status cleared via `GET /health`.
+- [PREVENTIVE_MEASURE]: (1) The `high_latency_p95` alert rule (`config/alert_rules.yaml`) triggers automatically when P95 > 3000 ms for 30 minutes, paging the on-call team. (2) The runbook at `docs/alerts.md#1-high-latency-p95` provides step-by-step diagnosis: check Langfuse traces to compare RAG vs LLM span durations, inspect `/health` for active incidents, and apply mitigations (disable incident toggle, reduce corpus size, or truncate queries). (3) Add circuit-breaker timeouts on the RAG retrieval path to fail fast rather than degrade slowly.
 
 ---
 
@@ -62,18 +62,16 @@
 - [TASKS_COMPLETED]: Implemented PII redaction in logging pipeline by enabling `scrub_event`; added recursive scrub for nested log fields (dict/list/tuple); extended `PII_PATTERNS` with `passport` and `address`; added tests for email, VN phone, credit card, passport, address, and nested payload redaction; verified with `.venv` using `pytest` (6 passed) and runtime validation where PII scrubbing passed.
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/49d7af8cebb3db3980ad7437af8bc968453c7417
 
-### Member B: [Your Name Here]
+### Phạm Quốc Vương (Member B)
 - [TASKS_COMPLETED]: 
-  - Implemented correlation ID middleware with UUID generation (format: req-{8-char-hex})
-  - Added automatic correlation ID extraction from x-request-id header or auto-generation
-  - Bound correlation_id to structlog contextvars for automatic log propagation
-  - Added response headers (x-request-id, x-response-time-ms) for client-side tracking
-  - Implemented log enrichment in /chat endpoint with user_id_hash, session_id, feature, model, env
-  - Verified Langfuse tracing infrastructure (ready, requires API keys to activate)
-  - Achieved 100/100 validation score with 14+ unique correlation IDs
-  - Zero PII leaks detected, all required fields present in logs
-  
-- [EVIDENCE_LINK]: [Your commit link - e.g., https://github.com/username/repo/commit/abc123] 
+  - Implemented correlation ID middleware in `app/middleware.py`: added `clear_contextvars()` to prevent context leakage between requests; generate unique IDs using format `req-{uuid4.hex[:8]}`; extract existing `x-request-id` from request headers or auto-generate; bind `correlation_id` to structlog contextvars for automatic propagation across all log entries.
+  - Added response headers `x-request-id` and `x-response-time-ms` for client-side tracking and latency measurement.
+  - Implemented log enrichment in `app/main.py` `/chat` endpoint: bind `user_id_hash`, `session_id`, `feature`, `model`, and `env` to structlog contextvars so every downstream log line carries full request context.
+  - Enhanced `app/tracing.py` with Langfuse v3 SDK integration: implemented `langfuse_span()` and `langfuse_generation()` context managers for creating hierarchical trace spans; added `update_current_trace()` for trace-level metadata (user, session, tags); implemented `flush()` for graceful shutdown; provided safe no-op fallbacks when SDK is absent.
+  - Enhanced `app/agent.py` to propagate `correlation_id` into Langfuse trace metadata and create structured spans for `rag.retrieve` and `llm.generate` pipeline steps.
+  - Added `app/main.py` shutdown event to flush pending Langfuse traces.
+  - Achieved 100/100 validation score with 30 unique correlation IDs and zero PII leaks.
+- [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/5609c5a
 
 ### Trương Minh Phước (2A202600330)
 - [TASKS_COMPLETED]:
@@ -97,15 +95,22 @@
     - Tokens in/out = 1020 / 3692.
     - Quality avg = 0.88 (SLO >= 0.75).
   - Evidence screenshots committed under `docs/evidence/dashboard-panels-1.png` (panels 1-4) and `docs/evidence/dashboard-panels-2.png` (panels 5-6 + load-test appendix).
-- [EVIDENCE_LINK]: [Your commit link - e.g., https://github.com/username/repo/commit/abc123]
+- [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/e2dc345
 
 ### Lương Hoàng Anh (Member E)
-- [TASKS_COMPLETED]: 
-- [EVIDENCE_LINK]: 
+- [TASKS_COMPLETED]:
+  - Coordinated team report compilation: created initial `docs/blueprint-template.md` structure, collected individual contributions from all members, and merged into the final report document.
+  - Filled in Team Metadata (Section 1): group name, repo URL, and all 5 member names with their assigned roles.
+  - Completed Group Performance data (Section 2): recorded final validation score (100/100), total trace count (30), and PII leak count (0).
+  - Assembled Technical Evidence (Section 3): linked correlation ID and PII redaction screenshots (`docs/evidences/logs.png`), Langfuse trace waterfall screenshot (`docs/evidences/langfuse_2.png`), dashboard panel screenshots, and SLO compliance table with live metric values.
+  - Wrote Incident Response analysis (Section 4): documented the `rag_slow` scenario including symptoms observed, root cause identification via Langfuse trace span comparison, fix actions taken, and preventive measures through alert rules and runbooks.
+  - Managed Git workflow: resolved merge conflicts between concurrent team edits on blueprint-template.md, ensured all member contributions were preserved, and maintained clean commit history.
+  - Prepared demo flow documentation: organized the presentation structure covering the observability pipeline from logging → tracing → dashboard → alerting → incident response.
+- [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/109c5da
 
 ---
 
 ## 6. Bonus Items (Optional)
-- [BONUS_COST_OPTIMIZATION]: (Description + Evidence)
-- [BONUS_AUDIT_LOGS]: (Description + Evidence)
-- [BONUS_CUSTOM_METRIC]: (Description + Evidence)
+- [BONUS_COST_OPTIMIZATION]: The system implements per-request cost estimation using a model-aware pricing formula in `agent.py` (`_estimate_cost` method: $3/M input tokens, $15/M output tokens). Combined with the `/metrics` endpoint and `scripts/check_slo.py`, the team can track cost in real-time and compare against the $2.50/day SLO budget. Current average cost is $0.002/request — well within budget.
+- [BONUS_AUDIT_LOGS]: Structured JSON logs are persisted to `data/logs.jsonl` via the `JsonlFileProcessor` in `logging_config.py`, creating a durable audit trail separate from console output. Each log entry includes `correlation_id`, `user_id_hash` (PII-safe), `session_id`, `feature`, `model`, timestamp, and event type — suitable for compliance auditing.
+- [BONUS_CUSTOM_METRIC]: Added `quality_score` as a 4th SLI/SLO metric beyond the standard latency/error/cost trio. The heuristic quality scorer in `agent.py` (`_heuristic_quality`) evaluates response relevance based on document retrieval success, answer length, keyword overlap with the question, and absence of over-redaction. This metric is tracked end-to-end: computed in the agent → recorded in `/metrics` → visualized in dashboard Panel 6 → monitored by the `low_quality_score` alert rule.
