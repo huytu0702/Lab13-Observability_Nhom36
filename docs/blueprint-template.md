@@ -7,7 +7,7 @@
 - [GROUP_NAME]: [Nhom 36]
 - [REPO_URL]: https://github.com/huytu0702/Lab13-Observability_Nhom36.git
 - [MEMBERS]:
-  - Member A: [Nguyễn Huy Tú] | Role: Logging & PII
+  - Member A: [Nguyễn Huy Tú] | Role: Dashboard UI, Langfuse & PII
   - Member B: [Phạm Quốc Vương] | Role: Tracing & Enrichment
   - Member C: [Trương Minh Phước] | Role: SLO & Alerts
   - Member D: [Nguyễn Thành Trung] | Role: Load Test & Dashboard
@@ -32,17 +32,30 @@
 - [TRACE_WATERFALL_EXPLANATION]: The `llm.generate` span inside the `agent.run` trace is the most interesting span. It captures the full LLM generation lifecycle including model name (`claude-sonnet-4-5`), input/output token counts (`input: 34, output: ~137`), estimated cost (`$0.002`), and a PII-safe preview of both the prompt and the response. The parent `agent.run` trace wraps both `rag.retrieve` (document retrieval) and `llm.generate` spans, giving a clear waterfall view of where latency is spent — retrieval vs generation. This hierarchical structure enables quick root-cause analysis: if latency spikes, we can immediately see whether the bottleneck is in RAG or LLM by comparing span durations.
 
 ### 3.2 Dashboard & SLOs
-- [DASHBOARD_6_PANELS_SCREENSHOT]: docs/evidence/dashboard-panels-1.png, docs/evidence/dashboard-panels-2.png
+- [DASHBOARD_6_PANELS_SCREENSHOT]:
+
+![Dashboard overview](evidences/dashboard_1.png)
+
+![Dashboard lower panels](evidences/dashboard_2.png)
+
 - [SLO_TABLE]:
 | SLI | Target | Window | Current Value |
 |---|---:|---|---:|
-| Latency P95 | < 3000ms | 28d | 165 ms |
-| Error Rate | < 2% | 28d | 0.0% |
-| Cost Budget | < $2.5/day | 1d | $0.0631 (30 req) |
+| Latency P95 | < 3000ms | 28d | 152 ms |
+| Error Rate | < 2% | 28d | 0.00% |
+| Cost Budget | < $2.5/day | 1d | $0.0608 (latest 30-request batch) |
 | Quality Score Avg | >= 0.75 | 28d | 0.88 |
 
 ### 3.3 Alerts & Runbook
-- [ALERT_RULES_SCREENSHOT]: See `config/alert_rules.yaml` — 4 alert rules defined: `high_latency_p95` (P2), `high_error_rate` (P1), `cost_budget_spike` (P2), `low_quality_score` (P3). Each rule includes severity, condition, owner, runbook link, and annotations with summary + description.
+- [ALERT_RULES_SCREENSHOT]: Alert rules are defined in `config/alert_rules.yaml` and each rule points to a concrete remediation guide in `docs/alerts.md`.
+
+| Alert | Severity | Trigger | Owner | Runbook |
+|---|---|---|---|---|
+| `high_latency_p95` | P2 | `latency_p95_ms > 3000 for 30m` | `team-oncall` | `docs/alerts.md#1-high-latency-p95` |
+| `high_error_rate` | P1 | `error_rate_pct > 2 for 5m` | `team-oncall` | `docs/alerts.md#2-high-error-rate` |
+| `cost_budget_spike` | P2 | `hourly_cost_usd > 2x_baseline for 15m` | `finops-owner` | `docs/alerts.md#3-cost-budget-spike` |
+| `low_quality_score` | P3 | `quality_score_avg < 0.75 for 60m` | `ml-owner` | `docs/alerts.md#4-low-quality-score` |
+
 - [SAMPLE_RUNBOOK_LINK]: docs/alerts.md#1-high-latency-p95
 
 ---
@@ -59,7 +72,7 @@
 ## 5. Individual Contributions & Evidence
 
 ### Nguyễn Huy Tú (2A202600170)
-- [TASKS_COMPLETED]: Implemented PII redaction in logging pipeline by enabling `scrub_event`; added recursive scrub for nested log fields (dict/list/tuple); extended `PII_PATTERNS` with `passport` and `address`; added tests for email, VN phone, credit card, passport, address, and nested payload redaction; verified with `.venv` using `pytest` (6 passed) and runtime validation where PII scrubbing passed.
+- [TASKS_COMPLETED]: Implemented the dashboard UI used for demo/grading, including the visual layout for the live overview header, 6 metric panels, and the load-test appendix shown in `docs/evidences/dashboard_1.png` and `docs/evidences/dashboard_2.png`; ran and validated Langfuse so the team could capture trace waterfalls for `agent.run`, `rag.retrieve`, and `llm.generate`, then use those traces in the report and incident analysis; also implemented PII redaction in the logging pipeline by enabling `scrub_event`, adding recursive scrub for nested log fields (dict/list/tuple), extending `PII_PATTERNS` with `passport` and `address`, and adding tests for email, VN phone, credit card, passport, address, and nested payload redaction. Verified with `.venv` using `pytest` (6 passed) and runtime validation where PII scrubbing passed.
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/49d7af8cebb3db3980ad7437af8bc968453c7417
 
 ### Phạm Quốc Vương (Member B)
@@ -79,7 +92,7 @@
   - Extended `config/alert_rules.yaml`: tightened latency threshold from 5000 ms to 3000 ms (aligned with SLO); tightened error-rate threshold from 5% to 2% (aligned with SLO); added full `annotations` (summary + description) to all 3 existing rules; added 4th alert rule `low_quality_score` (severity P3, trigger `quality_score_avg < 0.75 for 60m`).
   - Expanded `docs/alerts.md` runbook: enriched all 3 existing runbooks with severity, first-check steps, mitigation actions, and escalation path; added runbook section 4 for `low_quality_score` including RAG doc_count check and over-redaction diagnosis.
   - Built `scripts/check_slo.py`: standalone Python script that fetches live `/metrics` from the running FastAPI app, loads `config/slo.yaml`, evaluates each SLI against its objective, and prints a compliance table (exit code 0 = all pass, 1 = breach). Supports `--url` flag and `--json` output mode.
-  - Verified compliance: ran `python scripts/check_slo.py` after 30 live requests — all 4 SLOs passed (P95=165 ms, error_rate=0%, cost=$0.063, quality=0.88). `validate_logs.py` score = 100/100, 0 PII leaks, 30 unique correlation IDs.
+  - Verified compliance: ran `python scripts/check_slo.py` after 30 live requests — all 4 SLOs passed (P95=152 ms, error_rate=0.00%, cost=$0.0608, quality=0.88). `validate_logs.py` score = 100/100, 0 PII leaks, 30 unique correlation IDs.
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/5315476
 
 ### Nguyễn Thành Trung (2A202600451)
@@ -88,13 +101,13 @@
   - Added `scripts/render_dashboard.py`: fetches live `/metrics`, joins it with `data/load_report.json`, loads `config/slo.yaml` (PyYAML optional, hand-rolled fallback), and renders the 6 required panels into `docs/dashboard.md` with explicit SLO/threshold lines (Latency P50/P95/P99 vs 3000 ms, Traffic, Error Rate vs 2%, Cost vs $2.50/day, Tokens in/out, Quality vs 0.75). Also writes `data/dashboard_snapshot.json` for parser-friendly grading and prints any breaching panels.
   - Expanded `docs/dashboard-spec.md`: documented the 6 panels with their `/metrics` source field, unit, SLO line, and matching alert (cross-linked to Member C's `config/alert_rules.yaml`); added the load-test → dashboard workflow and an evidence checklist.
   - Verified end-to-end on a live `uvicorn app.main:app --reload`: ran `python scripts/load_test.py --concurrency 5 --repeat 3` (30 requests, all succeeded) followed by `python scripts/render_dashboard.py`. Output saved to `docs/dashboard.md` and `data/dashboard_snapshot.json`. All 6 panels report **OK** against the SLOs from `config/slo.yaml`:
-    - Latency server-side P50/P95/P99 = 152 / 165 / 166 ms (SLO P95 < 3000 ms).
-    - Wall-clock latency from the load tester P50/P95/P99 = 789 / 806 / 807 ms — the gap vs server-side is HTTP/network overhead, a useful demo of why client-side measurement matters.
+    - Latency server-side P50/P95/P99 = 151 / 152 / 152 ms (SLO P95 < 3000 ms).
+    - Wall-clock latency from the load tester P50/P95/P99 = 775.4 / 1230.84 / 1230.84 ms — the gap vs server-side is HTTP/network overhead, a useful demo of why client-side measurement matters.
     - Error rate = 0.00% (SLO < 2%).
-    - Cost = $0.0584 total / $0.001900 avg per request (SLO < $2.50/day).
-    - Tokens in/out = 1020 / 3692.
+    - Cost = $0.0608 total / $0.0020 avg per request (SLO < $2.50/day).
+    - Tokens in/out = 1020 / 3850.
     - Quality avg = 0.88 (SLO >= 0.75).
-  - Evidence screenshots committed under `docs/evidence/dashboard-panels-1.png` (panels 1-4) and `docs/evidence/dashboard-panels-2.png` (panels 5-6 + load-test appendix).
+  - Evidence screenshots committed under `docs/evidences/dashboard_1.png` (overview + panels 1-3) and `docs/evidences/dashboard_2.png` (panels 1-6 + load-test appendix).
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/e2dc345
 
 ### Lương Hoàng Anh (Member E)
