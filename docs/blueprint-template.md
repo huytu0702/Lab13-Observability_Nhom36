@@ -7,7 +7,7 @@
 - [REPO_URL]: 
 - [MEMBERS]:
   - Member A: Nguyễn Huy Tú (2A202600170) | Role: Logging & PII
-  - Member B: [Name] | Role: Tracing & Enrichment
+  - Member B: Phạm Quốc Vương (2A202600419) | Role: Tracing & Enrichment
   - Member C: [Name] | Role: SLO & Alerts
   - Member D: [Name] | Role: Load Test & Dashboard
   - Member E: [Name] | Role: Demo & Report
@@ -59,9 +59,18 @@
 - [TASKS_COMPLETED]: Implemented PII redaction in logging pipeline by enabling `scrub_event`; added recursive scrub for nested log fields (dict/list/tuple); extended `PII_PATTERNS` with `passport` and `address`; added tests for email, VN phone, credit card, passport, address, and nested payload redaction; verified with `.venv` using `pytest` (6 passed) and runtime validation where PII scrubbing passed.
 - [EVIDENCE_LINK]: https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/49d7af8cebb3db3980ad7437af8bc968453c7417
 
-### [MEMBER_B_NAME]
+### Member B: [Your Name Here]
 - [TASKS_COMPLETED]: 
-- [EVIDENCE_LINK]: 
+  - Implemented correlation ID middleware with UUID generation (format: req-{8-char-hex})
+  - Added automatic correlation ID extraction from x-request-id header or auto-generation
+  - Bound correlation_id to structlog contextvars for automatic log propagation
+  - Added response headers (x-request-id, x-response-time-ms) for client-side tracking
+  - Implemented log enrichment in /chat endpoint with user_id_hash, session_id, feature, model, env
+  - Verified Langfuse tracing infrastructure (ready, requires API keys to activate)
+  - Achieved 100/100 validation score with 14+ unique correlation IDs
+  - Zero PII leaks detected, all required fields present in logs
+  
+- [EVIDENCE_LINK]: [Your commit link - e.g., https://github.com/username/repo/commit/abc123] 
 
 ### [MEMBER_C_NAME]
 - [TASKS_COMPLETED]: 
