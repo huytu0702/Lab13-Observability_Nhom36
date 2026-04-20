@@ -74,7 +74,7 @@
 
 ### Nguyễn Huy Tú (2A202600170)
 - `[TASKS_COMPLETED]`: Implemented the dashboard UI used for demo/grading, including the visual layout for the live overview header, 6 metric panels, and the load-test appendix shown in `docs/evidences/dashboard_1.png` and `docs/evidences/dashboard_2.png`; ran and validated Langfuse so the team could capture trace waterfalls for `agent.run`, `rag.retrieve`, and `llm.generate`, then use those traces in the report and incident analysis; also implemented PII redaction in the logging pipeline by enabling `scrub_event`, adding recursive scrub for nested log fields (dict/list/tuple), extending `PII_PATTERNS` with `passport` and `address`, and adding tests for email, VN phone, credit card, passport, address, and nested payload redaction. Verified with `.venv` using `pytest` (6 passed) and runtime validation where PII scrubbing passed.
-- `[EVIDENCE_LINK]`: [commit 49d7af8](https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/49d7af8cebb3db3980ad7437af8bc968453c7417)
+- `[EVIDENCE_LINK]`: [commit 49d7af8](https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/49d7af8cebb3db3980ad7437af8bc968453c7417), [commit 46c230a](https://github.com/huytu0702/Lab13-Observability_Nhom36/commit/46c230a11dfd37b3ad8a48cdf5cdffed43439745)
 
 ### Phạm Quốc Vương (2A202600419)
 - `[TASKS_COMPLETED]`:
