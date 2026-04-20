@@ -25,9 +25,10 @@
 ## 3. Technical Evidence (Group)
 
 ### 3.1 Logging & Tracing
-- [EVIDENCE_CORRELATION_ID_SCREENSHOT]: [Path to image]
-- [EVIDENCE_PII_REDACTION_SCREENSHOT]: [Path to image]
-- [EVIDENCE_TRACE_WATERFALL_SCREENSHOT]: [Path to image]
+- [EVIDENCE_CORRELATION_ID_SCREENSHOT] & [EVIDENCE_PII_REDACTION_SCREENSHOT]:
+[https://github.com/huytu0702/Lab13-Observability_Nhom36/blob/main/docs/evidences/logs.png?raw=true]
+  
+- [EVIDENCE_TRACE_WATERFALL_SCREENSHOT]: [https://github.com/huytu0702/Lab13-Observability_Nhom36/blob/main/docs/evidences/langfuse_2.png?raw=true]
 - [TRACE_WATERFALL_EXPLANATION]: (Briefly explain one interesting span in your trace)
 
 ### 3.2 Dashboard & SLOs
