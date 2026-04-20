@@ -1,16 +1,28 @@
 service: day13-observability-lab
+group: Nhom36
 window: 28d
+
 slis:
   latency_p95_ms:
-    objective: 3000
-    target: 99.5
-    note: Replace with your group's target
+    description: "95th-percentile request latency must stay below 3000 ms"
+    objective: 3000        # threshold value (ms)
+    target: 99.5           # % of time the SLI must be within objective
+    alert: high_latency_p95
+
   error_rate_pct:
-    objective: 2
+    description: "Percentage of failed requests must stay below 2%"
+    objective: 2           # max acceptable error rate (%)
     target: 99.0
+    alert: high_error_rate
+
   daily_cost_usd:
-    objective: 2.5
+    description: "Estimated daily spend must stay under $2.50"
+    objective: 2.5         # max acceptable daily cost (USD)
     target: 100.0
+    alert: cost_budget_spike
+
   quality_score_avg:
-    objective: 0.75
+    description: "Average heuristic quality score must stay above 0.75"
+    objective: 0.75        # minimum acceptable average score
     target: 95.0
+    alert: low_quality_score
